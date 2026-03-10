@@ -23,7 +23,7 @@ function ExperienceManager() {
   const fetchItems = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/experience");
-      setList(res.data);
+      setList(res.data.sort((a, b) => a.order - b.order));
     } catch (err) {
       console.error("Error fetching data:", err);
     }
@@ -31,9 +31,26 @@ function ExperienceManager() {
 
   useEffect(() => { fetchItems(); }, []);
 
-  // Categorize data for the list view
   const internships = list.filter(item => item.type === "internship");
   const committees = list.filter(item => item.type === "committee");
+
+  // --- INSTANT CLOUDINARY UPLOAD FOR LOGO ---
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const data = new FormData();
+    data.append("file", file);
+    setUploading(true);
+    try {
+      const res = await axios.post("http://localhost:5000/api/upload", data);
+      // Cloudinary returns the full absolute URL directly
+      setFormData({ ...formData, image: res.data.url });
+      setUploading(false);
+    } catch (err) {
+      setUploading(false);
+      alert("Failed to upload logo.");
+    }
+  };
 
   const addRoleToTimeline = () => {
     if (!tempRole.title || !tempRole.date) return alert("Title and Date are required");
@@ -48,7 +65,11 @@ function ExperienceManager() {
 
   const startEdit = (item) => {
     setEditingId(item._id);
-    setFormData({ ...item, roles: item.roles || [] });
+    setFormData({ 
+        ...item, 
+        roles: item.roles || [],
+        image: item.image || "" // Ensures the current logo loads into the form
+    });
     setCertFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -72,12 +93,14 @@ function ExperienceManager() {
     submitData.append("type", formData.type);
     submitData.append("location", formData.location);
     submitData.append("order", formData.order);
+    
+    // Pass the image URL (from the instant upload or existing DB entry)
     submitData.append("image", formData.image); 
     
     // Internship specific
-    submitData.append("role", formData.role);
-    submitData.append("duration", formData.duration);
-    submitData.append("description", formData.description);
+    submitData.append("role", formData.role || "");
+    submitData.append("duration", formData.duration || "");
+    submitData.append("description", formData.description || "");
 
     // Committee specific (Stringified for backend parsing)
     submitData.append("roles", JSON.stringify(formData.roles));
@@ -86,7 +109,7 @@ function ExperienceManager() {
     if (certFile) {
       submitData.append("certificate", certFile); 
     } else {
-      submitData.append("link", formData.link);
+      submitData.append("link", formData.link || "");
     }
 
     try {
@@ -114,7 +137,7 @@ function ExperienceManager() {
       <form onSubmit={handleSubmit} className={`p-8 rounded-2xl border mb-12 shadow-xl transition-all ${editingId ? 'bg-purple-900/10 border-purple-500/50' : 'bg-white/5 border-white/5'}`}>
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            {editingId ? "Editing Entry" : "Create New Entry"}
+            {editingId ? <><FaEdit className="text-purple-400"/> Editing Entry</> : <><FaPlus className="text-green-400"/> Create New Entry</>}
           </h3>
           {editingId && <button type="button" onClick={cancelEdit} className="text-gray-400 hover:text-white"><FaTimes/> Cancel</button>}
         </div>
@@ -126,9 +149,33 @@ function ExperienceManager() {
 
         <input className={inputClass} placeholder="Company Name" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} required />
         
-        <div className="grid grid-cols-2 gap-4">
-          <input className={inputClass} placeholder="Location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
-          <input type="number" className={inputClass} placeholder="Display Order" value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* --- ADDED LOGO PREVIEW & UPLOAD UI --- */}
+          <div className="w-full">
+              <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 flex items-center gap-2 tracking-widest">
+                 <FaUpload /> {uploading ? "Uploading Logo..." : "Logo Upload"}
+              </label>
+              <div className="flex gap-4 items-center">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload} 
+                  className={`${inputClass} text-xs pt-2.5 flex-grow`}
+                />
+                {/* Visual feedback of current logo */}
+                {formData.image && (
+                  <div className="w-12 h-12 rounded-lg bg-[#0a0a0a] border border-white/10 shrink-0 overflow-hidden -mt-3 flex items-center justify-center p-1">
+                    <img src={formData.image} className="w-full h-full object-contain" alt="preview" />
+                  </div>
+                )}
+              </div>
+          </div>
+
+          <div>
+             <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block tracking-widest">Display Order</label>
+             <input type="number" className={inputClass} value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} />
+          </div>
         </div>
 
         {formData.type === 'internship' ? (
@@ -140,6 +187,7 @@ function ExperienceManager() {
             <div className="mb-4">
                 <label className="text-[10px] font-bold text-purple-400 uppercase mb-2 block flex items-center gap-2 tracking-widest"><FaFilePdf /> Upload Certificate</label>
                 <input type="file" className={`${inputClass} text-xs pt-2.5`} onChange={(e) => setCertFile(e.target.files[0])} accept=".pdf,image/*" />
+                {formData.link && !certFile && <p className="text-[10px] text-gray-500 italic mt-1">Current File Stored</p>}
             </div>
           </>
         ) : (
@@ -149,6 +197,14 @@ function ExperienceManager() {
             <input className={inputClass} placeholder="Date Range" value={tempRole.date} onChange={e => setTempRole({...tempRole, date: e.target.value})} />
             <textarea className={inputClass} placeholder="Points (separated by . )" rows="3" value={tempRole.points} onChange={e => setTempRole({...tempRole, points: e.target.value})} />
             <button type="button" onClick={addRoleToTimeline} className="w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg font-bold hover:bg-blue-500 hover:text-white transition-all">+ Add to Timeline</button>
+            <div className="mt-4 space-y-2">
+              {formData.roles.map((r, i) => (
+                <div key={i} className="flex justify-between items-center p-3 bg-black/40 rounded-lg border border-white/5">
+                  <span className="text-sm text-gray-300">{r.title} ({r.date})</span>
+                  <button type="button" onClick={() => setFormData({...formData, roles: formData.roles.filter((_, idx) => idx !== i)})} className="text-red-500 hover:text-red-400"><FaTrash size={12}/></button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -166,7 +222,7 @@ function ExperienceManager() {
               <div key={item._id} className="bg-white/5 p-5 rounded-2xl border border-white/5 flex justify-between items-center group hover:bg-white/[0.08] transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center border border-white/10 shrink-0">
-                    <img src={item.image} className="w-full h-full object-contain p-1 opacity-70 group-hover:opacity-100" alt=""/>
+                    {item.image ? <img src={item.image} className="w-full h-full object-contain p-1 opacity-70 group-hover:opacity-100" alt=""/> : <FaBriefcase className="text-gray-600"/>}
                   </div>
                   <div>
                     <h4 className="font-bold text-white">{item.company}</h4>
