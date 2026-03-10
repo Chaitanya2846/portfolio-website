@@ -140,11 +140,17 @@ function Navbar() {
                 <SocialLink href="https://leetcode.com/Chaitanya2806" icon={<FaCode />} />
             </div>
 
-            {/* --- UPDATED: Dynamic Resume Link --- */}
+            {/* --- UPDATED: Dynamic Resume Link with Safety Check --- */}
             <a 
                 href={resumeUrl || "#"} // Uses Cloudinary URL, falls back to # if loading
                 target="_blank" 
                 rel="noopener noreferrer"
+                onClick={(e) => {
+                    if (!resumeUrl) {
+                        e.preventDefault(); // Stop the browser from opening the "#" link
+                        alert("Resume is still loading or hasn't been uploaded yet!");
+                    }
+                }}
                 className="px-6 py-2.5 text-sm font-black text-black bg-white rounded-full hover:bg-gray-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300"
             >
                 Resume
@@ -186,12 +192,18 @@ function Navbar() {
              )
           })}
           
-          {/* MOBILE: Dynamic Resume Link Added Here As Well */}
+          {/* MOBILE: Dynamic Resume Link with Safety Check */}
           <li className="mt-8">
              <a 
                 href={resumeUrl || "#"} 
                 target="_blank" 
                 rel="noopener noreferrer"
+                onClick={(e) => {
+                    if (!resumeUrl) {
+                        e.preventDefault(); // Stop the browser from opening the "#" link
+                        alert("Resume is still loading or hasn't been uploaded yet!");
+                    }
+                }}
                 className="px-8 py-3 text-xl font-black text-black bg-white rounded-full hover:bg-gray-200 transition-all duration-300"
             >
                 View Resume
@@ -216,4 +228,4 @@ function SocialLink({ href, icon }) {
     )
 }
 
-export default Navbar
+export default Navbar;
