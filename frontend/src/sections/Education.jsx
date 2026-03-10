@@ -12,12 +12,13 @@ function Education() {
   const containerRef = useRef(null);
   const headingRef = useRef(null);
   const lineRef = useRef(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // 1. FETCH DYNAMIC DATA
   useEffect(() => {
     const fetchEducation = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/education");
+        const res = await axios.get(`${API_URL}/api/education`);
         const sortedData = res.data.sort((a, b) => a.order - b.order);
         setEducationData(sortedData);
         setLoading(false);

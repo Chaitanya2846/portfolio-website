@@ -38,10 +38,14 @@ function Achievements() {
   const gridRef = useRef(null);
   const modalRef = useRef(null);
 
+  // ✅ 1. Added dynamic API URL fallback
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/achievements");
+        // ✅ 2. Replaced localhost with dynamic API_URL
+        const res = await axios.get(`${API_URL}/api/achievements`);
         setAchievements(res.data);
         setLoading(false);
       } catch (err) {
@@ -50,7 +54,7 @@ function Achievements() {
       }
     };
     fetchAchievements();
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -125,11 +129,9 @@ function Achievements() {
     return !item.competition && item.type !== 'win'; 
   });
 
-  // FIXED: Foolproof Tag Separation
   const getTagsArray = (tags) => {
     if (!tags) return [];
     if (Array.isArray(tags)) {
-      // If MongoDB saved it as ["React, Python"] instead of ["React", "Python"]
       let extracted = [];
       tags.forEach(t => {
           if (t.includes(',')) {
@@ -144,10 +146,10 @@ function Achievements() {
     return [];
   };
 
-  // FIXED: Safe Image URL generator
+  // ✅ 3. Replaced localhost for dynamic image loading
   const getImageUrl = (url) => {
     if (!url) return "";
-    return url.startsWith('http') ? url : `http://localhost:5000${url}`;
+    return url.startsWith('http') ? url : `${API_URL}${url}`;
   };
 
   return (
@@ -195,7 +197,6 @@ function Achievements() {
                     
                     {/* FULL WIDTH IMAGE HEADER */}
                     <div className="relative h-56 w-full overflow-hidden shrink-0 cursor-pointer" onClick={() => setSelectedImage(getImageUrl(item.image))}>
-                        {/* APPLIED SAFE IMAGE URL */}
                         {item.image ? (
                           <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
                         ) : (

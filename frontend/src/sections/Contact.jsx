@@ -19,6 +19,9 @@ function Contact() {
   const textRef = useRef(null)
   const rotatorRef = useRef(null)
 
+  // ✅ 1. Added dynamic API URL fallback
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   // 1. STATE FOR FORM DATA
   const [formData, setFormData] = useState({
     name: "",
@@ -75,7 +78,8 @@ function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await axios.post("http://localhost:5000/api/contact", formData);
+      // ✅ 2. Replaced localhost with dynamic API_URL
+      await axios.post(`${API_URL}/api/contact`, formData);
       
       // Success State
       setIsSent(true);
@@ -224,4 +228,4 @@ function SocialBtn({ icon, link }) {
     )
 }
 
-export default Contact
+export default Contact;

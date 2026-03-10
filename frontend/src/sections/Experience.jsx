@@ -34,11 +34,12 @@ function Experience() {
   const containerRef = useRef(null);
   const headingRef = useRef(null);
   const contentRef = useRef(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchExperience = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/experience");
+        const res = await axios.get(`${API_URL}/api/experience`);
         const sortedData = res.data.sort((a, b) => a.order - b.order);
         setExperiences(sortedData);
         setLoading(false);

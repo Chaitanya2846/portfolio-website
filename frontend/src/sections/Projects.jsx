@@ -6,6 +6,9 @@ import { FaGithub, FaExternalLinkAlt, FaFileContract, FaCode } from "react-icons
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ✅ 1. Added dynamic API URL fallback globally
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 // --- HELPER: Universal Logo Generator ---
 const getUniversalLogo = (skillName) => {
   if (!skillName) return "";
@@ -29,7 +32,8 @@ const getUniversalLogo = (skillName) => {
 
 const getImageUrl = (url) => {
   if (!url) return "";
-  return url.startsWith('/') ? `http://localhost:5000${url}` : url;
+  // ✅ 2. Replaced localhost with dynamic API_URL for images
+  return url.startsWith('/') ? `${API_URL}${url}` : url;
 };
 
 const HighlightText = ({ text }) => {
@@ -60,7 +64,8 @@ function Projects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/projects");
+        // ✅ 3. Replaced localhost in the fetch request
+        const res = await axios.get(`${API_URL}/api/projects`);
         setProjects(res.data);
         setLoading(false);
       } catch (err) {

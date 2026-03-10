@@ -20,6 +20,7 @@ function Skills() {
   const containerRef = useRef(null);
   const headingRef = useRef(null);
   const gridRef = useRef(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // --- DYNAMIC LOGO GENERATOR ---
   const getUniversalLogo = (skillName) => {
@@ -80,7 +81,7 @@ function Skills() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/skills");
+        const res = await axios.get(`${API_URL}/api/skills`);
         
         // Sort the incoming data based on CATEGORY_ORDER
         const sortedData = res.data.sort((a, b) => 
