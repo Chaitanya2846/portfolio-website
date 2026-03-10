@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2; // Added Cloudinary
-const { CloudinaryStorage } = require('multer-storage-cloudinary'); // Added Cloudinary Storage
+const cloudinary = require('cloudinary').v2; 
+const { CloudinaryStorage } = require('multer-storage-cloudinary'); 
 require('dotenv').config();
 
 // Import Your Models
@@ -13,6 +13,7 @@ const Experience = require('./models/Experience');
 const Education = require('./models/Education');
 const Achievement = require('./models/Achievement');
 const Contact = require('./models/Contact');
+const Profile = require('./models/Profile'); // NEW MODEL IMPORTED
 
 const app = express();
 
@@ -31,8 +32,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'portfolio_uploads', // All files will be grouped in this Cloudinary folder
-    resource_type: 'auto',       // 'auto' is required so it accepts both images AND PDFs
+    folder: 'portfolio_uploads', 
+    resource_type: 'auto', 
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf']
   }
 });
@@ -58,8 +59,6 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) return res.status(400).json("No file uploaded");
-        
-        // Cloudinary automatically generates the secure URL in req.file.path
         res.json({ url: req.file.path }); 
     } catch (err) {
         console.error("Upload error:", err);
@@ -73,33 +72,27 @@ const createCrudRoute = (Model) => {
 
   router.get('/', async (req, res) => {
     try {
-      // Sort by order and then by newest created
       const items = await Model.find().sort({ order: 1, createdAt: -1 });
       res.json(items);
     } catch (err) { res.status(500).json(err); }
   });
 
-  // Handle both 'image' (logo) and 'certificate' (file) fields
   router.post('/', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'certificate', maxCount: 1 }]), async (req, res) => {
     try {
       const data = { ...req.body };
 
-      // 1. Handle Logo Upload via Cloudinary
       if (req.files && req.files['image']) {
-        data.image = req.files['image'][0].path; // Direct Cloudinary URL
+        data.image = req.files['image'][0].path; 
       }
 
-      // 2. Handle Certificate Upload via Cloudinary
       if (req.files && req.files['certificate']) {
-        data.link = req.files['certificate'][0].path; // Direct Cloudinary URL
+        data.link = req.files['certificate'][0].path; 
       }
 
-      // 3. Parse 'roles' array if it arrives as a string
       if (data.roles && typeof data.roles === 'string') {
         data.roles = JSON.parse(data.roles);
       }
 
-      // 4. Handle Tags
       if (data.tags && typeof data.tags === 'string') {
         data.tags = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
       }
@@ -118,11 +111,11 @@ const createCrudRoute = (Model) => {
       const data = { ...req.body };
 
       if (req.files && req.files['image']) {
-        data.image = req.files['image'][0].path; // Direct Cloudinary URL
+        data.image = req.files['image'][0].path; 
       }
 
       if (req.files && req.files['certificate']) {
-        data.link = req.files['certificate'][0].path; // Direct Cloudinary URL
+        data.link = req.files['certificate'][0].path; 
       }
 
       if (data.roles && typeof data.roles === 'string') {
@@ -133,7 +126,6 @@ const createCrudRoute = (Model) => {
         data.tags = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
       }
 
-      // --- FIXED MONGOOSE WARNING HERE ---
       const updatedItem = await Model.findByIdAndUpdate(req.params.id, data, { returnDocument: 'after' });
       
       res.json(updatedItem);
@@ -157,6 +149,7 @@ app.use('/api/experience', createCrudRoute(Experience));
 app.use('/api/education', createCrudRoute(Education));
 app.use('/api/achievements', createCrudRoute(Achievement));
 app.use('/api/contact', createCrudRoute(Contact));
+app.use('/api/profile', createCrudRoute(Profile)); // REGISTERED PROFILE ROUTE
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

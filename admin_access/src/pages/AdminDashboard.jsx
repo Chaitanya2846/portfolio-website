@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   FaProjectDiagram, FaCode, FaBriefcase, 
-  FaGraduationCap, FaTrophy, FaEnvelope, FaSignOutAlt 
+  FaGraduationCap, FaTrophy, FaEnvelope, FaSignOutAlt, FaFilePdf 
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import SkillManager from "./SkillManager";
 import EducationManager from "./EducationManager";
 import ExperienceManager from "./ExperienceManager";
 import MessageManager from "./MessageManager";
+import ResumeManager from "./ResumeManager"; // ADDED RESUME MANAGER
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("projects");
@@ -36,6 +37,9 @@ function AdminDashboard() {
         <SidebarBtn icon={<FaTrophy />} label="Achievements" id="achievements" active={activeTab} set={setActiveTab} />
         <SidebarBtn icon={<FaEnvelope />} label="Messages" id="contact" active={activeTab} set={setActiveTab} />
         
+        {/* ADDED RESUME BUTTON IN SIDEBAR */}
+        <SidebarBtn icon={<FaFilePdf />} label="Resume" id="resume" active={activeTab} set={setActiveTab} />
+        
         <button 
           onClick={handleLogout} 
           className="mt-auto flex items-center justify-center gap-3 px-4 py-3 text-red-400 bg-red-500/5 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl font-bold transition-all"
@@ -56,6 +60,9 @@ function AdminDashboard() {
           {activeTab === "education" && <EducationManager />}
           {activeTab === "achievements" && <AchievementManager />}
           {activeTab === "contact" && <MessageManager />}
+          
+          {/* ADDED RESUME MANAGER RENDER */}
+          {activeTab === "resume" && <ResumeManager />}
         </div>
       </div>
     </div>

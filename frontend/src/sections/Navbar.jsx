@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
+import axios from "axios"
 import { FaGithub, FaLinkedin, FaCode } from "react-icons/fa"
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  
+  // --- NEW: State to hold the dynamic resume URL ---
+  const [resumeUrl, setResumeUrl] = useState("")
 
   const navLinks = [
     { name: "Home", link: "#home" },
@@ -15,6 +20,21 @@ function Navbar() {
     { name: "Achievements", link: "#achievements" },
     { name: "Contact", link: "#contact" },
   ]
+
+  // --- FETCH DYNAMIC RESUME FROM BACKEND ---
+  useEffect(() => {
+    const fetchResume = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/profile`);
+        if (res.data.length > 0 && res.data[0].resumeUrl) {
+          setResumeUrl(res.data[0].resumeUrl);
+        }
+      } catch (err) {
+        console.error("Failed to fetch resume:", err);
+      }
+    };
+    fetchResume();
+  }, []);
 
   // --- UPDATED RELOAD LOGIC ---
   useEffect(() => {
@@ -120,8 +140,9 @@ function Navbar() {
                 <SocialLink href="https://leetcode.com/Chaitanya2806" icon={<FaCode />} />
             </div>
 
+            {/* --- UPDATED: Dynamic Resume Link --- */}
             <a 
-                href="/Chaitanya_Shirdhankar_Resume(3).pdf" 
+                href={resumeUrl || "#"} // Uses Cloudinary URL, falls back to # if loading
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-6 py-2.5 text-sm font-black text-black bg-white rounded-full hover:bg-gray-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300"
@@ -164,6 +185,18 @@ function Navbar() {
                 </li>
              )
           })}
+          
+          {/* MOBILE: Dynamic Resume Link Added Here As Well */}
+          <li className="mt-8">
+             <a 
+                href={resumeUrl || "#"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-8 py-3 text-xl font-black text-black bg-white rounded-full hover:bg-gray-200 transition-all duration-300"
+            >
+                View Resume
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
