@@ -4,7 +4,6 @@ A high-performance, responsive portfolio website built with the **MERN Stack** (
 
 ## 🚀 Live Links
 - **Public Portfolio:** (https://portfolio-website-iota-ten-88.vercel.app)
-- **Backend API:** (https://portfolio-backend-cq7w.onrender.com)
 
 ## 🛠️ Tech Stack
 - **Frontend:** React.js, Vite, Tailwind CSS, GSAP (Animations), Framer Motion
