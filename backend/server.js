@@ -21,6 +21,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// --- WAKE UP ROUTE (For Frontend Terminal Loader) ---
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: 'Server is awake!' });
+});
+// ----------------------------------------------------
+
 // --- CLOUDINARY CONFIGURATION ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
