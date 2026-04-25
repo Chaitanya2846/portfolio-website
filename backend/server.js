@@ -157,5 +157,14 @@ app.use('/api/achievements', createCrudRoute(Achievement));
 app.use('/api/contact', createCrudRoute(Contact));
 app.use('/api/profile', createCrudRoute(Profile)); // REGISTERED PROFILE ROUTE
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// --- VERCEL SERVERLESS EXPORT ---
+
+// 1. Keep this for local development (so 'npm start' still works)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`)); 
+}
+
+// 2. Export the Express app so Vercel can run it as a serverless function
+module.exports = app;
